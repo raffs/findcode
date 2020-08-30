@@ -19,6 +19,21 @@
 #include <string.h>
 #include "findcode.h"
 
+struct codestack_t *
+stack_init()
+{
+    struct codestack_t *stack;
+
+    stack = (struct codestack_t *) malloc(sizeof(struct codestack_t));
+    memset(stack, 0x00, sizeof(struct codenode_t));
+
+    stack->head = NULL;
+    stack->next = NULL;
+    stack->length = 0;
+
+    return stack;
+}
+
 struct codenode_t *
 codestack_pop(struct codestack_t *q)
 {
@@ -49,21 +64,6 @@ codestack_push(struct codestack_t *q, struct codenode_t *node)
     q->head = new_item;
 
     q->length += 1;
-}
-
-struct codestack_t *
-stack_init()
-{
-    struct codestack_t *stack;
-
-    stack = (struct codestack_t *) malloc(sizeof(struct codestack_t));
-    memset(stack, 0x00, sizeof(struct codenode_t));
-
-    stack->head = NULL;
-    stack->next = NULL;
-    stack->length = 0;
-
-    return stack;
 }
 
 void

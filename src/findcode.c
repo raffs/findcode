@@ -15,20 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#include <dirent.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "findcode.h"
 
 int
 main(int argc, char* argv[])
 {
-    FILE *file;
-    char buffer[BUF_SIZE];
-    char *codename;
-    size_t n_read;
-    unsigned int line_counter = 0;
-    struct codestack_t *stack;
-    struct codenode_t *node;
+    int rcode = 0;
+    struct stat sb;
 
     if (argc < 2) {
         fprintf(stderr, "Error, please specify a <path>\n");
@@ -36,53 +36,20 @@ main(int argc, char* argv[])
         return 1;
     }
 
-    file = fopen(argv[1], "r");
-    if (file == NULL) {
-        fprintf(stderr, "Error when trying to fopen() file\n");
-        return 2;
-    }
+    for (int i = 1; i < argc; ++i) {
 
-    stack = stack_init();
+        if (lstat(argv[i], &sb) == -1) {
+            fprintf(stderr, "not found %s\n", argv[i]);
+            return 2;
+        }
 
-    /* read until the end of the file */
-    while (1) {
-        n_read = fread(buffer, sizeof(char), (size_t)BUF_SIZE, file);
-
-        if (n_read == 0)
-            break; /* we reach the end of the file */
-
-        line_counter = 1;
-        for (int i = 0; i < n_read; i++) {
-
-            /* increment the new line counter */
-            if (buffer[i] == '\n')
-                line_counter = line_counter + 1;
-
-            /* when founds an open block, we should look behind and defines the words */
-            if (buffer[i] == '{') {
-
-                /* parse the previous defined words after finding the block name */
-                codename = lookstr_behind(buffer, i, BUF_SIZE);
-
-                /* let's push() the found code block to parsing stack */
-                node = codenode_init();
-                node->name = codename;
-                node->starts = line_counter;
-
-                codestack_push(stack, node);
-            }
-
-            /* we found a close block, let's pop the current block and finished it up */
-            if (buffer[i] == '}') {
-                node = codestack_pop(stack);
-                node->ends = line_counter;
-                fprintf(stdout, "%s:%d:%d: %s\n", argv[1], node->starts, node->ends, node->name);
-            }
+        if (sb.st_mode & S_IFREG)
+            parse_file(argv[i]);
+        else {
+            fprintf(stderr, "file '%s' is not regular file \n", argv[i]);
+            rcode = 1;
         }
     }
 
-    stack_free(stack);
-    fclose(file);
-
-    return 0;
+    return rcode;
 }

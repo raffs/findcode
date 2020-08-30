@@ -60,16 +60,31 @@ struct codestack_t
     struct codestack_t *next;
 };
 
-struct codenode_t *codenode_init();
-void codenode_free();
+/**
+ * codetree_t defines tree structure with information about the
+ * code block.
+ */
+struct codetree_t
+{
+    /* holds a pointer to the inner block of codes */
+    struct codetree_t *inner;
 
+    /* points to the next struct on the three */
+    struct codetree_t *next;
+};
+
+/**
+ * functions prototypes
+ */
+struct codenode_t *codenode_init();
+struct codetree_t *parse_file(char* filepath);
 struct codestack_t *stack_init();
 struct codenode_t *codestack_pop(struct codestack_t *q);
-void codestack_push(struct codestack_t *q, struct codenode_t *n);
-void stack_free(struct codestack_t *q);
-
 char *substring(char *buffer, int start, int end);
 char *lookstr_behind(char *buffer, int curidx, size_t maxbuffer);
+void codestack_push(struct codestack_t *q, struct codenode_t *n);
+void stack_free(struct codestack_t *q);
 void free_string(char* str);
+void codenode_free();
 
 #endif

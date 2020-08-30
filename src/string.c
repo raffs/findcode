@@ -20,6 +20,14 @@
 
 #include "findcode.h"
 
+/**
+ * subscripts returns a NULL-terminated string given the
+ * a buffer, and start and ending position.
+ *
+ * TODO: Validate the start/end boundaries to avoid
+ * creation a substring that tries to access memory greater
+ * or lower then the buffer size.
+ */
 char *
 substring(char *buffer, int start, int end)
 {
@@ -37,32 +45,14 @@ substring(char *buffer, int start, int end)
     return newstr;
 }
 
+/**
+ * freeing the memory allocated by a string. this is just wrapper
+ * but the plan is to have string structure with more information
+ * and this was safely handle the "de-allocation" of memory
+ */
 void
 free_string(char* str)
 {
     if (str != NULL)
         free(str);
-}
-
-char *
-lookstr_behind(char *buffer, int curidx, size_t maxbuffer)
-{
-    char *codename;
-    int wstart_idx = 0;
-    int is_wstarted = 0;
-
-    for (int i = curidx - 1; i > 0; --i) {
-        if (buffer[i] == ' ' || buffer[i] == '\t' || buffer[i] == '\n') {
-            if (is_wstarted) {
-                wstart_idx = i + 1;
-                break; /* seems we find the end of the word */
-            }
-        }
-        else
-            is_wstarted = 1;
-    }
-
-    codename = substring((char*)buffer, wstart_idx, curidx);
-
-    return codename;
 }

@@ -8,15 +8,16 @@ CFLAGS = -g -O2 -Wall
 TARGET = findcode
 
 # List of source files to include on the build
-SRCS = src/findcode.c
+SRCS = src/string.c
 SRCS += src/node.c
 SRCS += src/stack.c
-SRCS += src/string.c
+SRCS += src/parser.c
+SRCS += src/findcode.c
 
 OBJS = $(SRCS:.c=.o)
 
 # flags for the memory check phrase using valgrind
-MEMCHECK_FLAGS = --track-origin=yes --leak-check=full
+MEMCHECK_FLAGS = --track-origins=yes --leak-check=full
 
 .PHONY: clean
 
@@ -36,4 +37,4 @@ memcheck: $(TARGET)
 	@valgrind $(MEMCHECK_FLAGS) ./$(TARGET)
 
 clean:
-	@echo cleaning up the files
+	rm -f src/*.o $(TARGET)
