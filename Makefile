@@ -8,10 +8,11 @@ CFLAGS = -g -O2 -Wall
 TARGET = findcode
 
 # List of source files to include on the build
-SRCS = src/string.c
-SRCS += src/node.c
-SRCS += src/stack.c
-SRCS += src/parser.c
+#SRCS = src/string.c
+#SRCS += src/node.c
+#SRCS += src/stack.c
+#SRCS += src/tree.c
+#SRCS += src/parser.c
 SRCS += src/findcode.c
 
 OBJS = $(SRCS:.c=.o)

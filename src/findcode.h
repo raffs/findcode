@@ -18,73 +18,40 @@
 #ifndef __FINDCODE_H
 #define __FINDCODE_H
 
-#define BUF_SIZE 2048
+#define BUF_SIZE 1024
 
-/**
- * codenode_t holds information about a code block definition,
- * such as code block name, lines where starts and ends.
- */
-struct codenode_t
+struct cblock_t
 {
-    /* the name of the code block */
     char *name;
-
-    /* the line where the block starts and ends */
-    int starts;
-    int ends;
+    int start_at;
+    int end_at;
 };
 
-/**
- * codestack_t is FILO data structure used to store the open blocks
- * being parsed.
- *
- * By using a FILO we can avoid any recusrive call, and process the block
- * at one cycle of reading through the file. When a new code block is open
- * we store the block on the stack, and any other inner block is store at
- * the top of the stack, once the blocks is closed we start to pop the code
- * from the stack and finishes the code writing them into the main tree.
- *
- * Technically the stack is linked list with a head pointer to knows what
- * objects are on the top of the list.
- */
-struct codestack_t
+struct cqueue_t
 {
-    /* holds the length of the stack */
-    int length;
+    struct cblock_t *cblock;
 
-    /* holds information about a code block */
-    struct codenode_t *cblock;
-
-    /* pointer to the stack head and next object on the stack */
-    struct codestack_t *head;
-    struct codestack_t *next;
+    /* points to the next object on the queue */
+    struct cqueue_t *head;
+    struct cqueue_t *next;
 };
 
-/**
- * codetree_t defines tree structure with information about the
- * code block.
- */
-struct codetree_t
+struct ctree_t
 {
-    /* holds a pointer to the inner block of codes */
-    struct codetree_t *inner;
+    /* holds a pointer to the child block */
+    struct ctree_t *child;
 
-    /* points to the next struct on the three */
-    struct codetree_t *next;
+    /* points to the next block same-level block */
+    struct ctree_t *next;
 };
 
-/**
- * functions prototypes
- */
-struct codenode_t *codenode_init();
-struct codetree_t *parse_file(char* filepath);
-struct codestack_t *stack_init();
-struct codenode_t *codestack_pop(struct codestack_t *q);
-char *substring(char *buffer, int start, int end);
-char *lookstr_behind(char *buffer, int curidx, size_t maxbuffer);
-void codestack_push(struct codestack_t *q, struct codenode_t *n);
-void stack_free(struct codestack_t *q);
-void free_string(char* str);
-void codenode_free();
+struct cqueue_t * init_cqueue();
+struct cblock_t * cqueue_pop(struct cqueue_t *cq);
+int cqueue_push(struct cqueue_t *cq, struct cblock_t *cbk);
+void free_cqueue(struct cqueue_t *cq);
+struct cblock_t * init_cblock();
+void free_cblock(struct cblock_t *cbk);
+
+int process_file(char* filepath, char* pattern, size_t filesize);
 
 #endif
