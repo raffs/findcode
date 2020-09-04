@@ -1,4 +1,4 @@
-/**
+/*
  * findcode helps you locate lines of code inside your code base
  * Copyright (C) 2020  Rafael Oliveira Silva <rafaeloliveira.cs@gmail.com>
  *
@@ -18,40 +18,82 @@
 #ifndef __FINDCODE_H
 #define __FINDCODE_H
 
-#define BUF_SIZE 1024
+#include <stdio.h>
 
+/*
+ * cblock_t structure holds information about a code block such as
+ * code block name, statistics about on which line and column the code
+ * started and ended
+ */
 struct cblock_t
 {
+    /* name of the code block including all spaces, parameters */
     char *name;
-    int start_at;
-    int end_at;
+
+    /* keeps track on which line and column the codeblock started */
+    int start_line;
+    int start_column;
+
+    /* keeps track on which line and column the code ended */
+    int end_line;
+    int end_column;
 };
 
+/*
+ * cqueue_t is LIFO data structure that is used to store
+ * information about the 'cblock_t' that are being parsed
+ * from the file_parser()
+ *
+ * This provides the ability to store nested block code by
+ * only walking through the buffer once and pushing/popping
+ * the code blocks information as they are open and closed
+ */
 struct cqueue_t
 {
     struct cblock_t *cblock;
 
-    /* points to the next object on the queue */
+    /* should always points to HEAD of the queue */
     struct cqueue_t *head;
+
+    /* points to the next object on the queue */
     struct cqueue_t *next;
 };
 
-struct ctree_t
+/*
+ * die() is used to suddenly exit the program, when critical
+ * errors are found like when malloc() returns null (aka: OOM)
+ */
+static void inline die(char *errmsg)
 {
-    /* holds a pointer to the child block */
-    struct ctree_t *child;
+    fprintf(stderr, "ERROR: %s\n", errmsg);
+    exit(128);
+}
 
-    /* points to the next block same-level block */
-    struct ctree_t *next;
-};
+/*
+ * prototype for string.c helpers functions
+ */
+char *substring(char *buffer, int start, int end);
 
+/*
+ * prototype for managing the cqueue (codequeu) struct
+ */
 struct cqueue_t * init_cqueue();
 struct cblock_t * cqueue_pop(struct cqueue_t *cq);
 int cqueue_push(struct cqueue_t *cq, struct cblock_t *cbk);
 void free_cqueue(struct cqueue_t *cq);
+
+/*
+ * prototypes for the cblock (codeblock) managed functions
+ */
 struct cblock_t * init_cblock();
+void print_block(struct cblock_t *cbk, char *filepath, int flags);
 void free_cblock(struct cblock_t *cbk);
 
-int process_file(char* filepath, char* pattern, size_t filesize);
+/*
+ * main function that will process the buffer from the open file
+ * and parse the characers looking for the code block and storing
+ * the statistics
+ */
+int process_file(char* filepath, size_t filesize);
 
 #endif
