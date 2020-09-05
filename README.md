@@ -15,8 +15,14 @@ See the following example:
 $ cat > testing.cfg << EOF
 configuration {
     server {
-        daemon
+        daemon = enabled
+        listen = http://localhost:12345
     }
+}
+
+stats {
+    port = getenv("STATS_PORT")
+    internal = 10s
 }
 EOF
 ```
@@ -24,8 +30,9 @@ EOF
 2. Execute `./findcode` with the created file:
 ```sh
 $ ./findcode testing.cfg
-testing.cfg:2:4: server
-testing.cfg:1:5: configuration
+testing.cfg:2:5: server
+testing.cfg:1:6: configuration
+testing.cfg:8:11: stats
 ```
 
 ## Build

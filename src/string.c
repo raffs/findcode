@@ -21,25 +21,36 @@
 #include "findcode.h"
 
 /*
- * Returns a string buffer pointing to a substring of the given
- * 'buffer' variable. This is helper and initialy used to extract
- * the name of the codeblock
+ * Extra the last line from the buffer, given a specific
+ * range of chars. The range are stored as simply start
+ * and end indexes (aka: buffer[i]).
+ *
+ * This function is used to look behind the last line when
+ * a new block code is open "{".
  */
 char *
-substring(char *buffer, int start, int end)
+substr_lastline(char *buffer, int start, int end)
 {
     char *str;
     size_t size;
+    unsigned int idx;
 
-    size = (end - start) + 1;
+    /*
+     * transverse the buffer to find the previous newline
+     * definition in order to identity where the previous
+     * lines start so we can extract and return
+     */
+    for (idx = end; idx > 0 && buffer[idx] != '\n'; --idx);
 
+    size = (end - idx) + 1;
     str = (char *) malloc(sizeof(char) * size);
+
     if (str == NULL)
         die("OutOfMemory when allocating substring()");
 
     memset(str, 0, size);
 
-    for (int i = 0, j = start; j <= end; ++i, ++j)
+    for (int i = 0, j = idx; j <= end; ++i, ++j)
         str[i] = buffer[j];
 
     str[(size - 1)] = '\0';

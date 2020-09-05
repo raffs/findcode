@@ -64,7 +64,7 @@ process_file(char *filepath, size_t filesize)
         }
         else if (buffer[i] == '{') {
             cblock = init_cblock();
-            cblock->name = substring(buffer, curbuf_start, curbuf_end);
+            cblock->name = substr_lastline(buffer, curbuf_start, curbuf_end);
             cblock->start_column = i;
             cblock->start_line = cur_line;
             cqueue_push(cqueue, cblock);
@@ -83,6 +83,7 @@ process_file(char *filepath, size_t filesize)
             }
         }
 
+        /* keeps tracking of which position of the buffer we are */
         curbuf_end += 1;
     }
 

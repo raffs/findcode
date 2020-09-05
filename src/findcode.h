@@ -72,7 +72,7 @@ static void inline die(char *errmsg)
 /*
  * prototype for string.c helpers functions
  */
-char *substring(char *buffer, int start, int end);
+char *substr_lastline(char *buffer, int start, int end);
 
 /*
  * prototype for managing the cqueue (codequeu) struct
