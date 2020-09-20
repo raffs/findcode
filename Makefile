@@ -32,6 +32,9 @@ $(TARGET): $(OBJS)
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
 
+install:
+	@install -o root -g root -m 0755 findcode /usr/local/bin/findcode
+
 memcheck: $(TARGET)
 	@valgrind $(MEMCHECK_FLAGS) ./$(TARGET)
 

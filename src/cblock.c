@@ -55,7 +55,7 @@ print_block(struct cblock_t *cbk, char *filepath, int flags)
     fprintf(stdout, "%s:%d:%d: ", filepath, cbk->start_line, cbk->end_line);
 
     for (char *c = cbk->name; *c != '\0'; ++c) {
-        if (*c == ' ' || *c == '\n')
+        if (*c == '\n')
             continue;
 
         fprintf(stdout, "%c", *c);
