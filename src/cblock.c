@@ -52,8 +52,12 @@ init_cblock()
 void
 print_block(struct cblock_t *cbk, char *filepath, int flags)
 {
-    fprintf(stdout, "%s:%d:%d: ", filepath, cbk->start_line, cbk->end_line);
+    fprintf(stdout, "%s", filepath);
 
+    if (flags & CBLOCK_LINE_NUMBERS)
+        fprintf(stdout, ":%d:%d", cbk->start_line, cbk->end_line);
+
+    fprintf(stdout, ": ");
     for (char *c = cbk->name; *c != '\0'; ++c) {
         if (*c == '\n')
             continue;
