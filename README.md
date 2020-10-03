@@ -29,10 +29,18 @@ EOF
 
 2. Execute `./findcode` with the created file:
 ```sh
-$ ./findcode testing.cfg
-testing.cfg:2:5: server
-testing.cfg:1:6: configuration
-testing.cfg:8:11: stats
+$ ./findcode testing.sample
+testing.sample:     server
+testing.sample: configuration
+testing.sample: stats
+```
+
+3. Execute with `-n` to show line number where the block started and ended:
+```sh
+$ ./findcode -n testing.sample
+testing2.sample:2:5:     server
+testing2.sample:1:6: configuration
+testing2.sample:8:11: stats
 ```
 
 ## Build
