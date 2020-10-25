@@ -18,12 +18,67 @@
 
 #include "findcode.h"
 
+void
+help_usage()
+{
+    fprintf(stdout, "Usage: findcode [OPTIONS] <filepath> <filepath> ...\n");
+    fprintf(stdout, "\n");
+    fprintf(stdout, "OPTIONS:\n");
+    fprintf(stdout, "    --help             show this message\n");
+    fprintf(stdout, "    -n|--line-numbers  show line numbers\n");
+    fprintf(stdout, "\n");
+
+    exit(1);
+}
+
+/*
+ * Returns a cmd_options struct with the command line options and
+ * default values set.
+ * Caller are responsible to free the memory space after usage.
+ */
+struct cmd_options*
+parse_opts(const int argc, char *argv[])
+{
+    int option;
+    int option_index = 0;
+    struct cmd_options *opts;
+
+    static struct option cmd_options[] = {
+        {"line-numbers", no_argument, 0, 'n'},
+        {"help",         no_argument, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+
+    opts = (struct cmd_options *) malloc(sizeof(struct cmd_options));
+    if (!opts)
+        die("OutOfMemory: could not allocate memory for parse_options()");
+    memset(opts, 0, sizeof(struct cmd_options));
+
+    while (1) {
+        option = getopt_long(argc, argv, "n", cmd_options, &option_index);
+
+        if (option == -1)
+            break;
+
+        if (option == 'n')
+            opts->line_numbers = 1;
+
+        if (option == '?' || option == 'h') {
+            free(opts);
+            help_usage();
+        }
+    }
+
+    return opts;
+}
+
 int
-process_file(char *filepath, size_t filesize)
+process_file(char *filepath, size_t filesize, struct cmd_options *cmd_opts)
 {
     int fd;
-    int cur_line = 1, curbuf_start = 0, curbuf_end = 0;
     char *buffer;
+    int flags = 0;
+    int cur_line = 1, curbuf_start = 0, curbuf_end = 0;
     struct cblock_t *cblock;
     struct cqueue_t *cqueue;
 
@@ -41,6 +96,12 @@ process_file(char *filepath, size_t filesize)
     }
 
     cqueue = init_cqueue();
+
+    /*
+     * setup the flags that will be passed to the helper functions
+     */
+    if (cmd_opts->line_numbers)
+        flags |= CBLOCK_LINE_NUMBERS;
 
     /* process each line */
     for (int i = 0; i < filesize; i++) {
@@ -67,7 +128,7 @@ process_file(char *filepath, size_t filesize)
                 cblock->end_line = cur_line;
                 cblock->end_column = i;
 
-                print_block(cblock, filepath, 0);
+                print_block(cblock, filepath, flags);
                 free_cblock(cblock);
             }
         }
@@ -86,27 +147,31 @@ process_file(char *filepath, size_t filesize)
 int
 main(const int argc, char *argv[])
 {
+    char* file;
     struct stat file_sb;
+    struct cmd_options *cmd_opts;
 
-    if (argc < 2) {
-        fprintf(stderr, "Usage: findcode <filepath> <filepath> ...\n");
-        return 1;
-    }
+    if (argc < 2)
+        help_usage();
 
-    for (int i = 1; i < argc; i++) { /* for each file */
+    cmd_opts = parse_opts(argc, argv);
 
-        if (lstat(argv[i], &file_sb) == -1) {
-            fprintf(stderr, "no able to stat() file %s\n", argv[i]);
+    while (optind < argc) {
+        file = argv[optind++];
+
+        if (lstat(file, &file_sb) == -1) {
+            fprintf(stderr, "no able to stat() file %s\n", file);
             continue;
         }
 
         if (!(file_sb.st_mode & S_IFREG)) {
-            fprintf(stderr, "file '%s' not a regular file\n", argv[i]);
+            fprintf(stderr, "file '%s' not a regular file\n", file);
             continue;
         }
 
-        process_file(argv[i], (size_t)file_sb.st_size);
+        process_file(file, (size_t)file_sb.st_size, cmd_opts);
     }
 
+    free(cmd_opts);
     return 0;
 }

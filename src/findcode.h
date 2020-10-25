@@ -18,6 +18,7 @@
 #ifndef __FINDCODE_H
 #define __FINDCODE_H
 
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +27,23 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
+/*
+ * command line options
+ */
+struct cmd_options {
+
+    /* display the line number where the block was found */
+    int line_numbers;
+};
+
+
+/*
+ * define flags that control cblock print and processing
+ * behaviours
+ */
+#define CBLOCK_RESERVED       (1 << 0)
+#define CBLOCK_LINE_NUMBERS   (1 << 1)
 
 /*
  * cblock_t structure holds information about a code block such as
@@ -79,20 +97,25 @@ static void inline die(char *errmsg)
 /*
  * prototype for string.c helpers functions
  */
-char *substr_lastline(char *buffer, int start, int end);
+char* substr_lastline(char *buffer, int start, int end);
+
+/*
+ * helper functions
+ */
+struct cmd_options* parse_opts(int argc, char *argv[]);
 
 /*
  * prototype for managing the cqueue (codequeu) struct
  */
-struct cqueue_t * init_cqueue();
-struct cblock_t * cqueue_pop(struct cqueue_t *cq);
+struct cqueue_t* init_cqueue();
+struct cblock_t* cqueue_pop(struct cqueue_t *cq);
 int cqueue_push(struct cqueue_t *cq, struct cblock_t *cbk);
 void free_cqueue(struct cqueue_t *cq);
 
 /*
  * prototypes for the cblock (codeblock) managed functions
  */
-struct cblock_t * init_cblock();
+struct cblock_t* init_cblock();
 void print_block(struct cblock_t *cbk, char *filepath, int flags);
 void free_cblock(struct cblock_t *cbk);
 
@@ -101,6 +124,6 @@ void free_cblock(struct cblock_t *cbk);
  * and parse the characers looking for the code block and storing
  * the statistics
  */
-int process_file(char* filepath, size_t filesize);
+int process_file(char* filepath, size_t filesize, struct cmd_options *opts);
 
 #endif
