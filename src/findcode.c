@@ -21,34 +21,29 @@
 int
 process_file(char *filepath, size_t filesize)
 {
-    FILE *fp;
-    int n_read;
+    int fd;
     int cur_line = 1, curbuf_start = 0, curbuf_end = 0;
     char *buffer;
     struct cblock_t *cblock;
     struct cqueue_t *cqueue;
 
-    fp = fopen(filepath, "r");
-    if (fp == NULL) {
+    fd = open(filepath, O_RDONLY);
+    if (!fd) {
+        fprintf(stderr, "Error when open file: %s\n", filepath);
+        return 1;
+    }
+
+    buffer = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (buffer == MAP_FAILED) {
+        close(fd);
         fprintf(stderr, "Error when open file: %s\n", filepath);
         return 1;
     }
 
     cqueue = init_cqueue();
 
-    buffer = (char *) malloc(sizeof(char) * (filesize + 1));
-    n_read = fread(buffer, sizeof(char), filesize, fp);
-
-    if (n_read == 0 || n_read != filesize) {
-        free_cqueue(cqueue);
-        fclose(fp);
-        free(buffer);
-        return -1;
-    }
-
     /* process each line */
-    for (int i = 0; i < n_read; i++) {
-
+    for (int i = 0; i < filesize; i++) {
         if (buffer[i] == '\n') {
             /*
              * Keep track on which line we are at, so we
@@ -82,8 +77,8 @@ process_file(char *filepath, size_t filesize)
     }
 
     free_cqueue(cqueue);
-    fclose(fp);
-    free(buffer);
+    munmap(buffer, filesize);
+    close(fd);
 
     return 0;
 }
