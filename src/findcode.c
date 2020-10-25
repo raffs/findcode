@@ -89,8 +89,14 @@ process_file(char *filepath, size_t filesize, struct cmd_options *cmd_opts)
     }
 
     buffer = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE, fd, 0);
+
+    /**
+     * Once the file is mmap'ed there is not need for the fd
+     * to kept open, we should close it soon.
+     */
+    close(fd);
+
     if (buffer == MAP_FAILED) {
-        close(fd);
         fprintf(stderr, "Error when open file: %s\n", filepath);
         return 1;
     }
@@ -139,7 +145,6 @@ process_file(char *filepath, size_t filesize, struct cmd_options *cmd_opts)
 
     free_cqueue(cqueue);
     munmap(buffer, filesize);
-    close(fd);
 
     return 0;
 }
